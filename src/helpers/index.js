@@ -1,0 +1,9 @@
+export const currency = '₹';
+export const currentYear = new Date().getFullYear();
+export const appName = 'Snow White Laundry Service Admin';
+export const appTitle = 'Snow White Laundry Service Admin';
+export const appDescription = 'Snow White is a modern, responsive admin dashboard available on ThemeForest. Ideal for building CRM, CMS, project management tools, and custom web applications with a clean UI, flexible layouts, and rich features.';
+export const author = 'AfforDwell';
+export const authorWebsite = 'https://AfforDwell.com/';
+export const authorContact = '';
+export const basePath = '';
