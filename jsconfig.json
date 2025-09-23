@@ -34,7 +34,7 @@
     ".next/types/**/*.js",
     "next-env.d.js",
     ".next/types/**/*.ts"
-  ],
+, "next.config.mjs"  ],
   "exclude": [
     "node_modules"
   ]
