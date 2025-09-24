@@ -11,7 +11,7 @@ export default function Home() {
 
     if (!token) {
       // ❌ No token → go to sign-in
-      router.replace("/(auth)/auth-1/sign-in");
+      router.replace("/auth-1/sign-in");
     } else {
       // ✅ If you want to validate token with backend:
       fetch("https://snowwhite-admin.onrender.com/api/auth/me", {
@@ -23,13 +23,13 @@ export default function Home() {
         })
         .then(() => {
           // ✅ Token valid → redirect to dashboard
-          router.replace("/(admin)/(apps)/(dashboards)/dashboard");
+          router.replace("/dashboard");
         })
         .catch(() => {
           // ❌ Token invalid → clear and redirect to sign-in
           localStorage.removeItem("token");
           localStorage.removeItem("admin");
-          router.replace("/(auth)/auth-1/sign-in");
+          router.replace("/auth-1/sign-in");
         });
     }
   }, [router]);
