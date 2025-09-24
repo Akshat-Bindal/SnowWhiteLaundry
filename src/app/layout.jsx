@@ -25,8 +25,6 @@ import '@/assets/scss/app.scss';
 
 import { ibmPlexSans, inter, nunito, poppins, publicSans, roboto } from '@/helpers/fonts';
 
-// ⬇️ import the AuthProvider
-import { AuthProvider } from '@/context/AuthContext';
 
 export const metadata = {
   title: {
@@ -44,10 +42,9 @@ const RootLayout = ({ children }) => {
       className={`${nunito.variable} ${publicSans.variable} ${poppins.variable} ${roboto.variable} ${inter.variable} ${ibmPlexSans.variable}`}
     >
       <body>
-        {/* ✅ Wrap with AuthProvider */}
-        <AuthProvider>
+
           <AppWrapper>{children}</AppWrapper>
-        </AuthProvider>
+
       </body>
     </html>
   );
