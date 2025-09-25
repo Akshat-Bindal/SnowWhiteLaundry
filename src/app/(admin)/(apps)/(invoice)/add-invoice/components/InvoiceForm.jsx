@@ -126,48 +126,47 @@ const InvoiceForm = () => {
   }, [items, tax, discount]);
 
   // ----------------- Save Invoice -----------------
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+const handleSubmit = async (e) => {
+  e.preventDefault();
 
-    const payload = {
-      customerName,
-      customerPhone,
-      customerAddress,
-      orderDate,
-      deliveryDate,
-      items: items.map((item) => ({
-        description: item.description,
-        laundryType: item.laundryType,
-        qty: item.qty,
-        price: item.price,
-        amount: item.qty * item.price,
-      })),
-      subtotal,
-      tax,
-      discount,
-      total,
-    };
-
-    try {
-      const token = localStorage.getItem("token");
-      const res = await fetch("https://snowwhite-admin.onrender.com/api/invoices", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: token ? `Bearer ${token}` : "",
-        },
-        body: JSON.stringify(payload),
-      });
-
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Failed to save invoice");
-
-      alert("✅ Invoice saved successfully!");
-    } catch (err) {
-      alert("❌ Error: " + err.message);
-    }
+  const payload = {
+    customerName,
+    customerPhone,
+    customerAddress,
+    deliveryDate: deliveryDate
+      ? new Date(deliveryDate).toISOString().split("T")[0] // 👈 "YYYY-MM-DD"
+      : null,
+    items: items.map((item) => ({
+      description: item.description,
+      laundryType: item.laundryType,
+      qty: item.qty,
+      price: item.price,
+    })),
+    tax,
+    discount,
   };
 
+  try {
+    const token = localStorage.getItem("token");
+
+    const res = await fetch("https://snowwhite-admin.onrender.com/api/invoices", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: token ? `Bearer ${token}` : "",
+      },
+      body: JSON.stringify(payload),
+    });
+
+    const data = await res.json();
+
+    if (!res.ok) throw new Error(data.error || "Failed to save invoice");
+
+    alert("✅ Invoice saved successfully!");
+  } catch (err) {
+    alert("❌ Error: " + err.message);
+  }
+};
   // ----------------- Download PDF -----------------
   const handleDownload = async () => {
     if (!invoiceRef.current) return;

@@ -1,8 +1,8 @@
 "use client";
 
-import Cookies from "js-cookie"; // ✅ we'll use this
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import Cookies from "js-cookie";
 import AppLogo from "@/components/AppLogo";
 import { currentYear } from "@/helpers";
 import {
@@ -21,6 +21,7 @@ const SignInPage = () => {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const [rememberMe, setRememberMe] = useState(false); // ✅ state for checkbox
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -34,23 +35,25 @@ const SignInPage = () => {
           headers: {
             "Content-Type": "application/json",
           },
-          body: JSON.stringify({ username, password }), // adjust if backend expects email
+          body: JSON.stringify({ username, password }),
         }
       );
 
-      const data = await res.json();
+      let data;
+      try {
+        data = await res.json();
+      } catch {
+        throw new Error("Unexpected server error");
+      }
 
       if (!res.ok) {
-        throw new Error(data.message || "Login failed");
+        throw new Error(data?.message || "Login failed");
       }
 
       // ✅ Save token & admin info in localStorage
       localStorage.setItem("token", data.token);
       localStorage.setItem("admin", JSON.stringify(data.admin));
-
-      // ✅ Also save token in a cookie (important for middleware)
-      Cookies.set("token", data.token, { expires: 7, secure: true }); // 7 days, HTTPS only
-
+  
       // ✅ Redirect to dashboard
       router.push("/dashboard");
     } catch (err) {
@@ -115,6 +118,8 @@ const SignInPage = () => {
                       className="form-check-input form-check-input-light fs-14"
                       type="checkbox"
                       id="rememberMe"
+                      checked={rememberMe}
+                      onChange={(e) => setRememberMe(e.target.checked)}
                     />
                     <label className="form-check-label" htmlFor="rememberMe">
                       Keep me signed in

@@ -1,38 +1,37 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 
 export default function Home() {
   const router = useRouter();
+  const [checking, setChecking] = useState(true);
 
   useEffect(() => {
     const token = localStorage.getItem("token");
 
-    if (!token) {
-      // ❌ No token → go to sign-in
+    if (!token || token === "undefined") {
       router.replace("/auth-1/sign-in");
-    } else {
-      // ✅ If you want to validate token with backend:
-      fetch("https://snowwhite-admin.onrender.com/api/auth/me", {
-        headers: { Authorization: `Bearer ${token}` },
-      })
-        .then((res) => {
-          if (!res.ok) throw new Error("Invalid token");
-          return res.json();
-        })
-        .then(() => {
-          // ✅ Token valid → redirect to dashboard
-          router.replace("/dashboard");
-        })
-        .catch(() => {
-          // ❌ Token invalid → clear and redirect to sign-in
-          localStorage.removeItem("token");
-          localStorage.removeItem("admin");
-          router.replace("/auth-1/sign-in");
-        });
+      return;
     }
+
+    // ✅ Validate token
+    fetch("https://snowwhite-admin.onrender.com/api/auth/me", {
+      headers: { Authorization: `Bearer ${token}` },
+    })
+      .then((res) => {
+        if (!res.ok) throw new Error("Invalid token");
+        return res.json();
+      })
+      .then(() => router.replace("/dashboard"))
+      .catch(() => {
+        localStorage.removeItem("token");
+        localStorage.removeItem("admin");
+        router.replace("/auth-1/sign-in");
+      })
+      .finally(() => setChecking(false));
   }, [router]);
 
-  return <p className="text-center mt-5">Redirecting...</p>;
+  if (checking) return <p className="text-center mt-5">Checking session...</p>;
+  return null;
 }

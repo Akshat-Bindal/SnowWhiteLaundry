@@ -2,6 +2,7 @@
 
 import { Container } from "react-bootstrap";
 import Page from "@/app/(admin)/(apps)/(support-center)/tickets-list/page";
+import withAuth from "@/components/withAuth";
 
 const DashboardPage = () => {
   return (
@@ -11,4 +12,4 @@ const DashboardPage = () => {
   );
 };
 
-export default DashboardPage;
+export default withAuth(DashboardPage);

@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Button, Card, CardFooter, CardHeader, Col, Row } from 'react-bootstrap';
+import { Button, Card, CardFooter, CardHeader, Col, Row, Modal, Form } from 'react-bootstrap';
 import { LuSearch, LuShuffle } from 'react-icons/lu';
 import { TbAlertTriangle, TbPlus, TbTrash } from 'react-icons/tb';
 import {
@@ -31,6 +31,11 @@ const TicketTabel = () => {
   const [selectedRowIds, setSelectedRowIds] = useState({});
   const [showDeleteModal, setShowDeleteModal] = useState(false);
 
+  // For editing status
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [editingRow, setEditingRow] = useState(null);
+  const [newStatus, setNewStatus] = useState("");
+
   // 🔵 Fetch invoices from backend
   useEffect(() => {
     fetchInvoices();
@@ -54,6 +59,26 @@ const TicketTabel = () => {
       });
   };
 
+  // 🔵 Update status
+  const handleEditStatus = async () => {
+    if (!editingRow) return;
+
+    try {
+      await fetch(`https://snowwhite-admin.onrender.com/api/invoices/${editingRow._id}/status`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status: newStatus }),
+      });
+
+      fetchInvoices(); // refresh table
+    } catch (err) {
+      console.error("Update error:", err);
+    } finally {
+      setShowEditModal(false);
+      setEditingRow(null);
+    }
+  };
+
   // 🔴 Delete selected invoices in DB
   const handleDelete = async () => {
     const idsToDelete = Object.keys(selectedRowIds).map(
@@ -69,8 +94,7 @@ const TicketTabel = () => {
         )
       );
 
-      // Refresh table after deletion
-      fetchInvoices();
+      fetchInvoices(); // Refresh table
       setSelectedRowIds({});
       setPagination({ ...pagination, pageIndex: 0 });
     } catch (err) {
@@ -82,13 +106,13 @@ const TicketTabel = () => {
 
   const toggleDeleteModal = () => setShowDeleteModal(!showDeleteModal);
 
-  // ✅ Corrected columns array
+  // ✅ Table columns
   const columns = [
     columnHelper.accessor('_id', {
       header: 'Order ID',
       cell: ({ row }) => (
         <Link
-          href={`/ticket-details/?id=${row.original._id}`} // ✅ dynamic link
+          href={`/ticket-details/?id=${row.original._id}`}
           className="fw-semibold link-reset"
         >
           #{row.original._id.slice(-6).toUpperCase()}
@@ -109,8 +133,8 @@ const TicketTabel = () => {
           priority === 'High'
             ? 'text-bg-danger'
             : priority === 'Medium'
-            ? 'text-bg-warning'
-            : 'text-bg-primary';
+              ? 'text-bg-warning'
+              : 'text-bg-primary';
         return <span className={`badge ${color}`}>{priority}</span>;
       },
     }),
@@ -144,6 +168,21 @@ const TicketTabel = () => {
       header: 'Actions',
       cell: ({ row }) => (
         <div className="d-flex gap-1">
+          {/* ✏️ Edit Button */}
+          <Button
+            size="sm"
+            variant="warning"
+            className="btn-icon btn-sm rounded"
+            onClick={() => {
+              setEditingRow(row.original);
+              setNewStatus(row.original.status || "Pending");
+              setShowEditModal(true);
+            }}
+          >
+            ✏️
+          </Button>
+
+          {/* 🗑 Delete Button */}
           <Button
             size="sm"
             variant="danger"
@@ -231,11 +270,9 @@ const TicketTabel = () => {
                   }
                 >
                   <option value="">All</option>
-                  <option value="Requested">Requested</option>
-                  <option value="Picked_up">Picked Up</option>
+                  <option value="Pending">Pending</option>
                   <option value="Processing">Processing</option>
-                  <option value="Ready">Ready</option>
-                  <option value="Out for Delivery">Out for Delivery</option>
+                  <option value="Completed">Completed</option>
                   <option value="Delivered">Delivered</option>
                 </select>
                 <LuShuffle className="app-search-icon text-muted" />
@@ -289,6 +326,32 @@ const TicketTabel = () => {
             selectedCount={Object.keys(selectedRowIds).length}
             itemName="invoices"
           />
+
+          {/* Edit Status Modal */}
+          <Modal show={showEditModal} onHide={() => setShowEditModal(false)} centered>
+            <Modal.Header closeButton>
+              <Modal.Title>Edit Order Status</Modal.Title>
+            </Modal.Header>
+            <Modal.Body>
+              <Form.Select
+                value={newStatus}
+                onChange={(e) => setNewStatus(e.target.value)}
+              >
+                  <option value="Pending">Pending</option>
+                  <option value="Processing">Processing</option>
+                  <option value="Completed">Completed</option>
+                  <option value="Delivered">Delivered</option>
+              </Form.Select>
+            </Modal.Body>
+            <Modal.Footer>
+              <Button variant="secondary" onClick={() => setShowEditModal(false)}>
+                Cancel
+              </Button>
+              <Button variant="primary" onClick={handleEditStatus}>
+                Save
+              </Button>
+            </Modal.Footer>
+          </Modal>
         </Card>
       </Col>
     </Row>

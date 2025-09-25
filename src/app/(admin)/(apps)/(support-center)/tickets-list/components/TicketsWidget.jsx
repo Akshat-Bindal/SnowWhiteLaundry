@@ -12,6 +12,8 @@ import {
   TbWashHand,
   TbWashPress,
   TbWashDry3,
+  TbCalendarCheck,
+  TbClock12
 } from "react-icons/tb";
 
 const TicketsWidget = () => {
@@ -80,17 +82,17 @@ const TicketsWidget = () => {
     },
     {
       id: 6,
-      title: "Total Wash & Fold",
-      value: summary.washAndFoldOrders,
-      icon: <TbWashHand />,
+      title: "Total Monthly Orders",
+      value: summary.monthlyOrders,
+      icon: <TbCalendarCheck />,
       bgColor: "bg-danger-subtle",
       textColor: "text-success",
     },
     {
       id: 7,
-      title: "Total Wash & Iron",
-      value: summary.washAndIronOrders,
-      icon: <TbWashPress />,
+      title: "Total Today's Orders",
+      value: summary.todaysOrders,
+      icon: <TbClock12 />,
       bgColor: "bg-danger-subtle",
       textColor: "text-info",
     },
