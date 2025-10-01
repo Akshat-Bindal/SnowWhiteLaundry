@@ -185,6 +185,8 @@ const Products = forwardRef((props, ref) => {
                 <option value="Iron">Iron</option>
                 <option value="Dry">Dry</option>
                 <option value="Wash & Iron">Wash & Iron</option>
+                <option value="Raffu">Raffu</option>
+                <option value="Dye">Dye</option>
               </Form.Select>
             </td>
 
