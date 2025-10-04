@@ -14,6 +14,7 @@ import {
   FormControl,
   FormLabel,
   Row,
+  Spinner,
 } from "react-bootstrap";
 
 const SignInPage = () => {
@@ -21,11 +22,13 @@ const SignInPage = () => {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
-  const [rememberMe, setRememberMe] = useState(false); // ✅ state for checkbox
+  const [rememberMe, setRememberMe] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
+    setLoading(true);
 
     try {
       const res = await fetch(
@@ -43,21 +46,33 @@ const SignInPage = () => {
       try {
         data = await res.json();
       } catch {
-        throw new Error("Unexpected server error");
+        throw new Error("Unexpected server response");
       }
 
-      if (!res.ok) {
-        throw new Error(data?.message || "Login failed");
+      if (!res.ok || !data?.token) {
+        throw new Error(data?.message || "Invalid credentials");
       }
 
-      // ✅ Save token & admin info in localStorage
+      // ✅ Save token & admin info
       localStorage.setItem("token", data.token);
       localStorage.setItem("admin", JSON.stringify(data.admin));
-  
-      // ✅ Redirect to dashboard
-      router.push("/dashboard");
+
+      // ✅ Optional: persist using cookie if "Remember me" is checked
+      if (rememberMe) {
+        Cookies.set("token", data.token, {
+          expires: 7, // days
+          secure: true,
+          sameSite: "Strict",
+        });
+      }
+
+      // ✅ Redirect after short delay
+      setTimeout(() => {
+        router.push("/dashboard");
+      }, 600);
     } catch (err) {
-      setError(err.message);
+      setError(err.message || "Something went wrong");
+      setLoading(false);
     }
   };
 
@@ -69,7 +84,7 @@ const SignInPage = () => {
       <Container>
         <Row className="justify-content-center">
           <Col xxl={4} md={6} sm={8}>
-            <Card className="p-4">
+            <Card className="p-4 shadow-sm border-0 rounded-4">
               {/* Logo + Subtitle */}
               <div className="auth-brand text-center mb-4">
                 <AppLogo />
@@ -96,6 +111,7 @@ const SignInPage = () => {
                     required
                     value={username}
                     onChange={(e) => setUsername(e.target.value)}
+                    disabled={loading}
                   />
                 </div>
 
@@ -109,6 +125,7 @@ const SignInPage = () => {
                     required
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
+                    disabled={loading}
                   />
                 </div>
 
@@ -120,6 +137,7 @@ const SignInPage = () => {
                       id="rememberMe"
                       checked={rememberMe}
                       onChange={(e) => setRememberMe(e.target.checked)}
+                      disabled={loading}
                     />
                     <label className="form-check-label" htmlFor="rememberMe">
                       Keep me signed in
@@ -131,8 +149,23 @@ const SignInPage = () => {
                   <Button
                     type="submit"
                     className="btn-primary fw-semibold py-2"
+                    disabled={loading}
                   >
-                    Sign In
+                    {loading ? (
+                      <>
+                        <Spinner
+                          as="span"
+                          animation="border"
+                          size="sm"
+                          role="status"
+                          aria-hidden="true"
+                          className="me-2"
+                        />
+                        Signing In...
+                      </>
+                    ) : (
+                      "Sign In"
+                    )}
                   </Button>
                 </div>
               </Form>

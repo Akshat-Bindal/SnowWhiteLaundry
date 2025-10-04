@@ -1,24 +1,20 @@
 "use client";
-
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { useAuth } from "@/context/AuthContext";
 
 export default function withAuth(Component) {
   return function ProtectedComponent(props) {
     const router = useRouter();
-    const [loading, setLoading] = useState(true);
+    const { token } = useAuth();
 
     useEffect(() => {
-      const token = localStorage.getItem("token");
-
-      if (!token || token === "undefined") {
-        router.replace("/auth-1/sign-in"); // ✅ always the correct path
-      } else {
-        setLoading(false);
+      if (token === null) {
+        router.replace("/auth-1/sign-in");
       }
-    }, [router]);
+    }, [token, router]);
 
-    if (loading) {
+    if (token === null) {
       return <p className="text-center mt-5">Checking authentication...</p>;
     }
 
